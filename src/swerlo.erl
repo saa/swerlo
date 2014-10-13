@@ -2,16 +2,19 @@
 
 -export([auth/3]).
 -export([head_storage/1]).
+
 -export([get_containers/1]).
 -export([get_containers/2]).
 -export([put_container/2]).
 -export([put_container/3]).
 -export([head_container/2]).
 -export([delete_container/2]).
+
 -export([get_objects/2]).
 -export([get_objects/3]).
 -export([put_object/4]).
 -export([put_object/5]).
+-export([delete_object/3]).
 
 -record(state, {storage_url       :: binary(),
                 auth_token        :: binary(),
@@ -115,13 +118,13 @@ get_objects(Container, State, Opts) ->
             {error, Code, RespHeaders}
     end.
 
-put_object(Name, Data, Container, State) when is_binary(Data), is_binary(Container) ->
-    put_object(Name, Data, Container, [], State).
+put_object(Object, Data, Container, State) when is_binary(Data), is_binary(Container) ->
+    put_object(Object, Data, Container, [], State).
 
-put_object(Name, Data, Container, Headers, State) when is_binary(Data), is_binary(Container) ->
+put_object(Object, Data, Container, Headers, State) when is_binary(Data), is_binary(Container) ->
     Headers2 = lists:merge(Headers, State#state.auth_header),
     Headers3 = [{<<"ETag">>, etag(Data)}, {<<"Content-Length">>, size(Data)} | Headers2],
-    ReqUrl = iolist_to_binary([State#state.storage_url, "/", Container, "/", Name]),
+    ReqUrl = iolist_to_binary([State#state.storage_url, "/", Container, "/", Object]),
     case hackney:put(ReqUrl, Headers3, Data) of
         {ok, 201, _RespHeaders, _ClientRef} ->
             {ok, State};
@@ -129,6 +132,15 @@ put_object(Name, Data, Container, Headers, State) when is_binary(Data), is_binar
             {error, bad_md5};
         {ok, 404, _RespHeaders, _ClientRef} ->
             {error, container_not_found}
+    end.
+
+delete_object(Object, Container, State) ->
+    ReqUrl = iolist_to_binary([State#state.storage_url, "/", Container, "/", Object]),
+    case hackney:delete(ReqUrl, State#state.auth_header) of
+        {ok, 204, _RespHeaders, _ClientRef} ->
+            {ok, State};
+        {ok, 404, _RespHeaders, _ClientRef} ->
+            {error, object_not_found}
     end.
 
 %% ===================================================================
