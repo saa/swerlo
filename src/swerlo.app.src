@@ -6,7 +6,9 @@
   {applications, [
                   kernel,
                   stdlib,
-                  hackney
+                  hackney,
+                  xmerl,
+                  jsx
                  ]},
   {mod, { swerlo_app, []}},
   {env, []}

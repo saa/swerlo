@@ -1,8 +1,11 @@
 REBAR=./rebar
 
-all: deps compile
+all: clean deps compile
 
 deps: get-deps update-deps
+
+clean:
+	$(REBAR) clean
 
 compile:
 	$(REBAR) compile
@@ -12,6 +15,9 @@ get-deps:
 
 update-deps:
 	$(REBAR) update-deps
+
+run:
+	erl -pa deps/*/ebin -pa deps/*/include -pa ebin -s swerlo_app
 
 console:
 	erl -pa deps/*/ebin -pa deps/*/include -pa ebin
