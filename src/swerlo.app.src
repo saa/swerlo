@@ -1,0 +1,13 @@
+{application, swerlo,
+ [
+  {description, "Erlang client for OpenStack Swift"},
+  {vsn, git},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  hackney
+                 ]},
+  {mod, { swerlo_app, []}},
+  {env, []}
+ ]}.
